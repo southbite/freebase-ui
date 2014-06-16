@@ -9,7 +9,8 @@ console.log('registering app');
 var freebase_ui_app = angular.module('freebase_ui_app', [  
   'ui.bootstrap',                                            
   'ngAnimate',
-  'freebase'
+  'freebase',
+  'JSONedit'
 ]);
 
 var registerDataService = function (serviceName) {
@@ -62,6 +63,14 @@ freebase_ui_app.factory('AppSession', function($rootScope) {
 freebase_ui_app.controller('freebaseController', ['$scope', 'dataService', function($scope, dataService) {
 
     $scope.rootPaths = [];
+
+    $scope.selectedPath = {};
+
+    $scope.pathSelected = function(path){
+        console.log('path selected');
+        console.log(path);
+        $scope.selectedData = path.data;
+    }
 
     dataService.init('127.0.0.1', 8000, 'freebase-ui-secret', function(e){
 

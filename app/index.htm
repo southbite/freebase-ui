@@ -1,30 +1,24 @@
 <html style="margin:5px">
   <head>
-  	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
   	<link rel="stylesheet" href="css/bootstrap.css">
   	<link rel="stylesheet" href="css/bootstrap-theme.css">
  	<link rel="stylesheet" href="css/freebase-ui.css">
+ 	<link rel="stylesheet" href="css/json-edit.css">
 
- 	<script src="lib/jquery-1.9.1.js"></script>
+ 	<script src="lib/jquery-min.js"></script>
+ 	<script src="lib/jquery-ui-min.js"></script>
 	<script src="lib/bootstrap.min.js"></script>
 	<script src="lib/angular/angular.js"></script>
+	<script src="lib/angular/angular-ui.js"></script>
+
  	<script type="text/javascript" src="http://127.0.0.1:8000/browser_client"></script>
     <script src="lib/angular/ui-bootstrap-tpls-0.9.0.js"></script>
     <script src="lib/angular/angular-animate.js"></script>
-    <script src="lib/angular/freebase-angular.js"></script>
+    <script src="lib/angular/angular-multi-sortable.js"></script>
+    <script src="lib/json-edit.js"></script>
+    <script src="lib/freebase-angular.js"></script>
    
 	<script src="js/app.js"></script>
-
-	<script>
-	  //http://jsfiddle.net/jhfrench/GpdgF/
-	  //http://jhfrench.github.io/bootstrap-tree/docs/example.html
-	  $( document ).ready(function() {
-		  console.log('ready');
-		  //console.log(freebase_client);
-		  console.log(FreebaseBrowserClient);
-	  });
-	  
-	  </script>
 
   </head>
   
@@ -33,14 +27,24 @@
 	<div ng-controller="freebaseController" class="row">
 	  <div class="col-md-3 sidebar" style="padding-right:0px">
 	   <div class="header-div"><span class="header">Freebase Explorer</span>
+	   	  <span class="dropdown actions-span">
+			  <i href="#" class="dropdown-toggle glyphicon glyphicon-plus" data-toggle="dropdown"></i>
+				 <ul class="dropdown-menu" >
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Project', 'project_new')">Project</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Operation', 'operation_new')">Operation</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Control', 'control_new')">Control</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Shape', 'shape_new')">Shape</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Feed', 'feed_new')">Feed</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Flow', 'flow_new')">Flow</a></li>
+		        </ul>
+			</span>
 	   </div>
-	    <ul>
-		  	<li>Paths</li>
-		  	<li ng-repeat="path in rootPaths">{{path.path}}</li>
+	    <ul class="path-list">
+		  	<li ng-repeat="path in rootPaths" ng-click="pathSelected(path)">{{path.path}}</li>
 		  </ul>
 	  </div>
 	  <div class="col-md-9 content">
-	 	
+	 	<div style="margin:5px" class="jsonView" defocus><json child="selectedData" type="'object'"></json></div>
 	  </div>
 	</div>
 	
@@ -54,7 +58,7 @@
 	        <br>
 	      </div>
 	      <div class="modal-body">
-	     
+	      	
 	      </div>
 	    </div><!-- /.modal-content -->
 	  </div><!-- /.modal-dialog -->

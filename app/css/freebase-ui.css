@@ -93,3 +93,16 @@ body {
 	border-bottom-left-radius:5px;
 	border-top-right-radius:5px;
 }
+
+.path-list{
+	list-style-type: none;
+}
+
+.path-list li {
+	padding:5px;
+	cursor:pointer;
+}
+
+.path-list li:hover {
+	background-color:#CCC;
+}
