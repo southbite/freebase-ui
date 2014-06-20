@@ -19,6 +19,7 @@
     <script src="lib/freebase-angular.js"></script>
    
 	<script src="js/app.js"></script>
+	<script src="js/controllers/object.js"></script>
 
   </head>
   
@@ -27,24 +28,31 @@
 	<div ng-controller="freebaseController" class="row">
 	  <div class="col-md-3 sidebar" style="padding-right:0px">
 	   <div class="header-div"><span class="header">Freebase Explorer</span>
-	   	  <span class="dropdown actions-span">
+	   	  <span ng-show="authenticated"  class="dropdown actions-span">
 			  <i href="#" class="dropdown-toggle glyphicon glyphicon-plus" data-toggle="dropdown"></i>
 				 <ul class="dropdown-menu" >
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Project', 'project_new')">Project</a></li>
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Operation', 'operation_new')">Operation</a></li>
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Control', 'control_new')">Control</a></li>
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Shape', 'shape_new')">Shape</a></li>
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Feed', 'feed_new')">Feed</a></li>
-		          <li><a style="cursor:pointer" ng-click="openNewModal('Flow', 'flow_new')">Flow</a></li>
+		          <li><a style="cursor:pointer" ng-click="openNewModal('Array', 'new_object')">Record</a></li>
 		        </ul>
 			</span>
 	   </div>
+	  	<span ng-show="authenticated" ><input style="margin:5px;width:90%;border-radius:4px;border: 1px solid #cccccc;" ng-model="pathFilter" type="text"><i ng-click="refreshPaths()" style="position:relative;left:-25px;cursor:pointer" class="glyphicon glyphicon-search" value=""></i></span>
 	    <ul class="path-list">
 		  	<li ng-repeat="path in rootPaths" ng-click="pathSelected(path)">{{path.path}}</li>
 		  </ul>
 	  </div>
 	  <div class="col-md-9 content">
-	 	<div style="margin:5px" class="jsonView" defocus><json child="selectedData" type="'object'"></json></div>
+	  	<span ng-show="authenticated" class="content-actions" style="display:{{actions_display}};position:absolute;z-index:9999999999;top:0px;right:0px" id="span_content_actions">
+	 		<i ng-repeat="action in actions" ng-click="actionSelected(action)" class="content-action {{action.cssClass}}"></i>
+	 	</span>
+	 	<div ng-show="authenticated"  style="margin:5px" class="jsonView" defocus><json child="selectedData" type="'object'"></json></div>
+	 	<div ng-hide="authenticated"  style="margin:5px;width:100%;height:100%" >
+	 		 <form class="form-signin" role="form">
+		        <h2 class="form-signin-heading">Please sign in</h2>
+		        <input ng-model="dburl" type="text" class="form-control" placeholder="URL" required />
+		        <input ng-model="dbport" type="number" class="form-control" placeholder="Port" required />
+		        <span><input ng-model="dbsecret" type="secret" class="form-control" placeholder="Secret" required /><i style="cursor:pointer" class="glyphicon glyphicon-ok" ng-click="authenticate()"></i></span>
+		      </form>
+	 	</div>
 	  </div>
 	</div>
 	
