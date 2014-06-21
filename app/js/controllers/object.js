@@ -8,12 +8,32 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 
 	  var cleanTemplate = function(templateData){
 
+	  	if (templateData instanceof Array)
 	  	templateData.map(function(item, index, array){
+
+	  		console.log('templateData cleaning');
+	  		console.log(item);
+	  		console.log(item['data']);
 
 	  		if (item['_id'])
 	  			delete item['_id'];
 
-	  	});
+	  		if (item['data'])
+	  			item = item['data'];
+
+	  		console.log('item cleaned');
+	  		console.log(item);
+
+	  		array.splice(index, 1, item);
+
+		  });
+		  else{
+		  	if (templateData['_id'])
+	  			delete templateData['_id'];
+
+	  		if (templateData['data'])
+	  			templateData = templateData['data'];
+		  }
 
 		console.log('templateData cleaned');
 	  	console.log(templateData);
