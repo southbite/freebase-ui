@@ -151,15 +151,16 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                           });
 
                           if (!found){
-                            $scope.rootPaths.push({_id:message.data._id, path:message.data.path});
+                            $scope.rootPaths.push({_id:message.payload.data._id, path:message.path});
                             
                             apply = true;
                           }
 
                           console.log($scope.selectedPath);
-                          console.log(message.path);
+                          console.log(message.payload);
+
                          if (message.path == $scope.selectedPath){
-                            $scope.selectedData = message.data.data;
+                            $scope.selectedData = message.payload.data;
                             apply = true;
                             
                         }
@@ -176,8 +177,9 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                             dataService.instance.client.getPaths($scope.pathFilter, function(e, results){
 
-                                console.log(results.data);
-                                $scope.rootPaths = results.data;
+                                 console.log('root paths!!!');
+                                console.log(results.payload);
+                                $scope.rootPaths = results.payload;
 
                                 $scope.$apply();
 
@@ -188,11 +190,15 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                             if (action.text == 'save'){
 
-                                dataService.instance.client.set($scope.selectedPath, $scope.selectedData, {index:'freebase', type:$scope.selectedPath}, function(e, result){
+                               console.log('saving');
+                               console.log($scope.selectedPath);
+                               console.log($scope.selectedData);
+                               console.log('toJson');
+                               console.log(angular.toJson($scope.selectedData));
+
+                               dataService.instance.client.set($scope.selectedPath, JSON.parse(angular.toJson($scope.selectedData)), {index:'freebase', type:$scope.selectedPath}, function(e, result){
                                 
-                                    console.log('saving');
-                                    console.log($scope.selectedPath);
-                                    console.log($scope.selectedData);
+                                   
 
                                     if (!e){
                                         console.log('data saved successfully');
@@ -219,11 +225,11 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                             dataService.instance.client.get(path.path, null, function(e, result){
 
                                 console.log('data found');
-                                console.log(result.data);
+                                console.log(result.payload);
 
                                 if (!e){
                                      $scope.selectedPath = path.path;
-                                     $scope.selectedData = result.data;
+                                     $scope.selectedData = result.payload[0].data;
 
                                       var actions = [
                                         {

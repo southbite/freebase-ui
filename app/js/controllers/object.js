@@ -3,7 +3,7 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 	  $scope.message = {type:'alert-warning', message:'', display:'none'};
 	  $scope.data = {path:'', data:[]}; 
 
-	  $scope.settings = {template:{path:'None'}, typ:'object', types:['object','array']};
+	  $scope.settings = {template:{path:'None'}, typ:'object', types:['object','array'], json:null};
 
 
 	  var cleanTemplate = function(templateData){
@@ -56,9 +56,9 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 
 	   dataService.instance.client.get('/freebase/templates/*', null, function(e, results){
 
-	   	   results.data.push({path:'None'});
+	   	   results.payload.push({path:'None'});
 
-           $scope.templates = results.data;
+           $scope.templates = results.payload;
            $scope.$apply();
 
            $scope.ok = function () {
@@ -76,8 +76,15 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 					
 					if ($scope.settings.template && $scope.settings.template.path != 'None')
 						$scope.data.data = cleanTemplate($scope.settings.template.data);
-					else
-					{
+					else if ($scope.settings.json != '' && $scope.settings.json != null){
+						try{
+							$scope.data.data = JSON.parse($scope.settings.json);
+						}catch(e){
+							okToSave = false;
+							showMessage('alert-warning', 'BAD JSON: ' + e);
+						}
+					}
+					else{
 						if ($scope.settings.typ == 'object')
 							$scope.data.data = {};
 						else 
@@ -90,7 +97,7 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 					dataService.instance.client.set($scope.data.path, $scope.data.data, null, function(e, result){
 
 						if (!e){
-							$modalInstance.close(result.data);
+							$modalInstance.close(result.payload);
 						}else
 							showMessage('alert-warning', 'Failed saving new array: ' + e);
 

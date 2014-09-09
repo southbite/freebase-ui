@@ -1,5 +1,5 @@
 <div class="modal-header">
-            <h3>New array</h3>
+            <h3>New object</h3>
 </div>
 <div class="modal-body">
  <form class="form-horizontal" role="form">
@@ -31,6 +31,12 @@
        ng-model="settings.typ"
        >
     </select>
+    </div>
+     </div>
+     <div class="form-group" ng-show="settings.template.path == 'None'">
+    <label for="controlProject" class="col-sm-2 control-label">JSON</label>
+    <div class="col-sm-10">
+      <textarea class="form-control" rows="3" ng-model="settings.json"></textarea>
     </div>
   </div>
  </form>
