@@ -96,16 +96,39 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
          return $scope.openModal('../templates/' + action + '.html', action.toString(), handler);
      };
      
-     $scope.to_trusted = function(html_code) {
+    $scope.to_trusted = function(html_code) {
           return $sce.trustAsHtml(html_code);
-     };
+    };
      
-     $scope.toArray = function(items){
-          var returnArray = [];
-          for (var item in items)
-              returnArray.push(item);
-          return returnArray;
-      };
+    $scope.toArray = function(items){
+        var returnArray = [];
+        for (var item in items)
+            returnArray.push(item);
+        return returnArray;
+    };
+
+    $scope.bulkRemoveCurrent = function(){
+
+      if ($scope.pathFilter == '*' || $scope.pathFilter == '/*' )
+        return alert('That would entail deleting the whole database - sorry, not allowed...');
+
+      if (confirm('Are you sure you wish to remove all items on the path: ' + $scope.pathFilter + '?')){
+
+        dataService.instance.client.remove($scope.pathFilter, {index:'freebase', type:$scope.pathFilter}, function(e, result){
+        
+            if (e){
+                alert('data delete failed: ' + e);
+            }else{
+               $scope.rootPaths = [];
+               alert('data deleted successfully');
+               $scope.$apply();
+            }
+             
+        });
+
+      }
+
+    }
 
     $scope.authenticate = function(){
 
@@ -202,8 +225,10 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                                     if (!e){
                                         console.log('data saved successfully');
+                                        alert('data saved successfully');
                                     }else{
                                          console.log('data save failed: ' + e);
+                                         alert('data save failed');
                                     }
 
                                 });
@@ -212,7 +237,8 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                 
                                     if (e){
                                         //TODO - data was not deleted here...
-                                    }
+                                    }else
+                                      alert('data deleted successfully');
 
                                 });
                             }
@@ -230,7 +256,8 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                 if (!e){
                                      $scope.selectedPath = path.path;
                                      $scope.selectedData = result.payload[0].data;
-
+                                     $scope.selectedJSON = JSON.stringify(result.payload[0].data);
+                                     
                                       var actions = [
                                         {
                                             text:'undo',

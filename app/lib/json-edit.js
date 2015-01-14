@@ -1,16 +1,9 @@
-(function(window, angular, undefined) {'use strict';
-console.log('registering json-edit');
+'use strict';
 
 angular.module('JSONedit', ['ui'])
-
-.value('ui.config', {
-    "sortable": {
-        "axis": "y",
-        "placeholder": "sortable-placeholder"
-    }
-})
-
 .directive('ngModelOnblur', function() {
+    // override the default input to update on blur
+    // from http://jsfiddle.net/cn8VF/
     return {
         restrict: 'A',
         require: 'ngModel',
@@ -26,123 +19,50 @@ angular.module('JSONedit', ['ui'])
         }
     };
 })
-
-.directive('json', function($compile, $timeout) {
-
-  //TODO: try this - https://coderwall.com/p/mgtrkg
-
-  var getTemplate = function(_scope, stringName, objectName, arrayName){
-    //////
-        // Template Generation
-        //////
-
-        // Note:
-        // sometimes having a different ng-model and then saving it on ng-change
-        // into the object or array is necesarry for all updates to work
-        
-        // recursion
-        var switchTemplate = 
-            '<span ng-switch on="getType(val)" >'
-                + '<json ng-switch-when="Object" child="val" type="\'object\'"></json>'
-                + '<json ng-switch-when="Array" child="val" type="\'array\'"></json>'
-                + '<span ng-switch-default class="jsonLiteral"><input type="text" ng-model="val" '
-                    + 'placeholder="Empty" ng-model-onblur ng-change="child[key] = possibleNumber(val)"/>'
-                + '</span>'
-            + '</span>';
-        
-        // display either "plus button" or "key-value inputs"
-        var addItemTemplate = 
-        '<div ng-switch on="showAddKey" class="block" >'
-            + '<span ng-switch-when="true">';
-                if (_scope.type == "object"){
-                   // input key
-                    addItemTemplate += '<input placeholder="Name" type="text" ui-keyup="{\'enter\':\'addItem(child)\'}" '
-                        + 'class="input-small addItemKeyInput" ng-model="$parent.keyName" />';
-                }
-                addItemTemplate += 
-                // value type dropdown
-                '<select ng-model="$parent.valueType" ng-options="option for option in valueTypes"'
-                    + 'ng-init="$parent.valueType=\''+stringName+'\'" ui-keydown="{\'enter\':\'addItem(child)\'}"></select>'
-                // input value
-                + '<span ng-show="$parent.valueType == \''+stringName+'\'"> : <input type="text" placeholder="Value" '
-                    + 'class="input-medium addItemValueInput" ng-model="$parent.valueName" ui-keyup="{\'enter\':\'addItem(child)\'}"/></span> '
-                // Add button
-                + '<button class="btn btn-primary" ng-click="addItem(child)">Add</button> '
-                + '<button class="btn" ng-click="$parent.showAddKey=false">Cancel</button>'
-            + '</span>'
-            + '<span ng-switch-default>'
-                // plus button
-                + '<button class="addObjectItemBtn" ng-click="$parent.showAddKey = true"><i class="glyphicon glyphicon-plus"></i></button>'
-            + '</span>'
-        + '</div>';
-    
-        // start template
-        if (_scope.type == "object"){
-            var template = '<i ng-click="toggleCollapse()" ng-class="chevron"'
-            + ' ng-init="chevron = \'glyphicon glyphicon-chevron-down\'"></i>'
-            + '<span class="jsonItemDesc">'+objectName+'</span>'
-            + '<div class="jsonContents" ng-hide="collapsed">'
-                // repeat
-                + '<span class="block"  ng-repeat="(key, val) in child">'
-                    // object key
-                    + '<span class="jsonObjectKey">'
-                        + '<input class="keyinput" type="text" ng-model="newkey" ng-init="newkey=key" '
-                            + 'ng-change="moveKey(child, key, newkey)"/>'
-                        // delete button
-                        + '<i class="deleteKeyBtn glyphicon glyphicon-trash" ng-click="deleteKey(child, key)"></i>'
-                    + '</span>'
-                    // object value
-                    + '<span class="jsonObjectValue">' + switchTemplate + '</span>'
-                + '</span>'
-                // repeat end
-                + addItemTemplate
-            + '</div>';
-
-            return template;
-
-        } else if (_scope.type == "array") {
-            var template = '<i ng-click="toggleCollapse()" ng-class="chevron" ng-init="chevron = \'glyphicon glyphicon-chevron-down\'"></i>'
-            + '<span class="jsonItemDesc">'+arrayName+'</span>'
-            + '<div class="jsonContents" ng-hide="collapsed">'
-                + '<ol class="arrayOl" ui-multi-sortable ng-model="child">'
-                    // repeat
-                    + '<li class="arrayItem" ng-repeat="val in child">'
-                        // delete button
-                        + '<i class="deleteKeyBtn glyphicon glyphicon-trash" ng-click="deleteKey(child, $index)"></i>'
-                        + '<i class="moveArrayItemBtn glyphicon glyphicon-align-justify"></i>'
-                        + '<span>' + switchTemplate + '</span>'
-                    + '</li>'
-                    // repeat end
-                + '</ol>'
-                + addItemTemplate
-            + '</div>';
-
-            return template;
-
-        } else {
-           throw "scope.type was "+ _scope.type;
-        }
-  }
-
+.directive('json', function($compile) {
   return {
     restrict: 'E',
     scope: {
       child: '=',
-      type: '='
+      type: '@',
+      defaultCollapsed: '='
     },
     replace: true,
     link: function(scope, element, attributes) {
-        
         var stringName = "Text";
-        var objectName = "Catalog"; // or technically more correct: Map
-        var arrayName = "List";
+        var objectName = "Object";
+        var arrayName = "Array";
         var refName = "Reference";
 
-        console.log('LINKING UP');
-        console.log(scope);
-        console.log(element);
-
         scope.valueTypes = [stringName, objectName, arrayName, refName];
+        scope.sortableOptions = {
+            axis: 'y'
+        };
+
+        scope.collapsed = scope.defaultCollapsed;
+
+        /*
+        if (scope.$parent.defaultCollapsed === undefined) {
+            if (scope.$parent.$parent.$index > 0)//we making the children collapsed
+            {   
+                console.log('collapsing child');
+                scope.collapsed = true;
+            }
+            else{
+                console.log('not collapsing parent');
+                scope.collapsed = false;
+            }
+                
+        } else {
+            scope.collapsed = scope.defaultCollapsed;
+        }
+        */
+        if (scope.collapsed) {
+            scope.chevron = "glyphicon-chevron-right";
+        } else {
+            scope.chevron = "glyphicon-chevron-down";
+        }
+        
 
         //////
         // Helper functions
@@ -167,16 +87,18 @@ angular.module('JSONedit', ['ui'])
         scope.toggleCollapse = function() {
             if (scope.collapsed) {
                 scope.collapsed = false;
-                scope.chevron = "glyphicon glyphicon-chevron-down";
+                scope.chevron = "glyphicon-chevron-down";
             } else {
                 scope.collapsed = true;
-                scope.chevron = "glyphicon glyphicon-chevron-right";
+                scope.chevron = "glyphicon-chevron-right";
             }
         };
         scope.moveKey = function(obj, key, newkey) {
             //moves key to newkey in obj
-            obj[newkey] = obj[key];
-            delete obj[key];
+            if (key !== newkey) {
+                obj[newkey] = obj[key];
+                delete obj[key];
+            }
         };
         scope.deleteKey = function(obj, key) {
             if (getType(obj) == "Object") {
@@ -245,28 +167,95 @@ angular.module('JSONedit', ['ui'])
             return isNumber(val) ? parseFloat(val) : val;
         };
 
-        /*
-        var newElement = angular.element(getTemplate(scope, stringName, objectName, arrayName));
+        //////
+        // Template Generation
+        //////
+
+        // Note:
+        // sometimes having a different ng-model and then saving it on ng-change
+        // into the object or array is necesarry for all updates to work
+        
+        // recursion
+        var switchTemplate = 
+            '<span ng-switch on="getType(val)" >'
+                + '<json ng-switch-when="Object" child="val" type="object" default-collapsed="defaultCollapsed"></json>'
+                + '<json ng-switch-when="Array" child="val" type="array" default-collapsed="defaultCollapsed"></json>'
+                + '<span ng-switch-default class="jsonLiteral"><input type="text" ng-model="val" '
+                    + 'placeholder="Empty" ng-model-onblur ng-change="child[key] = possibleNumber(val)"/>'
+                + '</span>'
+            + '</span>';
+        
+        // display either "plus button" or "key-value inputs"
+        var addItemTemplate = 
+        '<div ng-switch on="showAddKey" class="block" >'
+            + '<span ng-switch-when="true">';
+                if (scope.type == "object"){
+                   // input key
+                    addItemTemplate += '<input placeholder="Name" type="text" ui-keyup="{\'enter\':\'addItem(child)\'}" '
+                        + 'class="form-control input-sm addItemKeyInput" ng-model="$parent.keyName" /> ';
+                }
+                addItemTemplate += 
+                // value type dropdown
+                '<select ng-model="$parent.valueType" ng-options="option for option in valueTypes" class="form-control input-sm"'
+                    + 'ng-init="$parent.valueType=\''+stringName+'\'" ui-keydown="{\'enter\':\'addItem(child)\'}"></select>'
+                // input value
+                + '<span ng-show="$parent.valueType == \''+stringName+'\'"> : <input type="text" placeholder="Value" '
+                    + 'class="form-control input-sm addItemValueInput" ng-model="$parent.valueName" ui-keyup="{\'enter\':\'addItem(child)\'}"/></span> '
+                // Add button
+                + '<button class="btn btn-primary btn-sm" ng-click="addItem(child)">Add</button> '
+                + '<button class="btn btn-default btn-sm" ng-click="$parent.showAddKey=false">Cancel</button>'
+            + '</span>'
+            + '<span ng-switch-default>'
+                // plus button
+                + '<button class="addObjectItemBtn" ng-click="$parent.showAddKey = true"><i class="glyphicon glyphicon-plus"></i></button>'
+            + '</span>'
+        + '</div>';
+
+
+        // start template
+        if (scope.type == "object"){
+            var template = '<i ng-click="toggleCollapse()" class="glyphicon" ng-class="chevron"></i>'
+            + '<span class="jsonItemDesc">'+objectName+'</span>'
+            + '<div class="jsonContents" ng-hide="collapsed">'
+                // repeat
+                + '<span class="block" ng-hide="key.indexOf(\'_\') == 0" ng-repeat="(key, val) in child">'
+                    // object key
+                    + '<span class="jsonObjectKey">'
+                        + '<input class="keyinput" type="text" ng-model="newkey" ng-init="newkey=key" '
+                            + 'ng-blur="moveKey(child, key, newkey)"/>'
+                        // delete button
+                        + '<i class="deleteKeyBtn glyphicon glyphicon-trash" ng-click="deleteKey(child, key)"></i>'
+                    + '</span>'
+                    // object value
+                    + '<span class="jsonObjectValue">' + switchTemplate + '</span>'
+                + '</span>'
+                // repeat end
+                + addItemTemplate
+            + '</div>';
+        } else if (scope.type == "array") {
+            var template = '<i ng-click="toggleCollapse()" class="glyphicon"'
+            + 'ng-class="chevron"></i>'
+            + '<span class="jsonItemDesc">'+arrayName+'</span>'
+            + '<div class="jsonContents" ng-hide="collapsed">'
+                + '<ol class="arrayOl" ui-sortable="sortableOptions" ng-model="child">'
+                    // repeat
+                    + '<li class="arrayItem" ng-repeat="val in child">'
+                        // delete button
+                        + '<i class="deleteKeyBtn glyphicon glyphicon-trash" ng-click="deleteKey(child, $index)"></i>'
+                        + '<i class="moveArrayItemBtn glyphicon glyphicon-align-justify"></i>'
+                        + '<span>' + switchTemplate + '</span>'
+                    + '</li>'
+                    // repeat end
+                + '</ol>'
+                + addItemTemplate
+            + '</div>';
+        } else {
+            console.error("scope.type was "+ scope.type);
+        }
+
+        var newElement = angular.element(template);
         $compile(newElement)(scope);
-        element.replaceWith(newElement); 
-        */
-        
-        element.html(getTemplate(scope, stringName, objectName, arrayName));
-        element.replaceWith($compile(element.html())(scope));
-        
-
-         scope.$watch("child", function(newValue,oldValue) {
-            console.log('Something changed');
-            console.log(newValue);
-            console.log(oldValue);
-
-            console.log(scope.child);
-            element.html(getTemplate(scope, stringName, objectName, arrayName));
-         });
+        element.replaceWith ( newElement );
     }
   };
 });
-
-console.log('registered json-edit');
-
-})(window, window.angular);
