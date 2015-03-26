@@ -1,17 +1,17 @@
 (function(window, angular, undefined) {'use strict';
-console.log('registering freebase');
+//console.log('registering freebase');
 
 if (!FreebaseBrowserClient)
    throw 'Freebase browser client library not referenced';
 
 angular.module('freebase', [])
 
-.factory('freebaseClient', ['$window', function(win) {
+.factory('freebaseClient', ['$window', function(wind) {
  return {
       connect:function(host, port, secret, done){
             var _this = this;
             
-            win.FreebaseBrowserClient.newClient({host:host, port:port, secret:secret}, function(e, client){
+            wind.FreebaseBrowserClient.newClient({host:host, port:port, secret:secret}, function(e, client){
 
                if (!e)
                   _this.client = client;
@@ -33,7 +33,7 @@ angular.module('freebase', [])
 }]);
 */
 
-console.log('registered freebase');
+//console.log('registered freebase');
 
 })(window, window.angular);
 

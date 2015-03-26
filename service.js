@@ -1,8 +1,13 @@
 var freebase = require('freebase');
 var service = freebase.service;
+var http = require('http');
+
+//so you run this to kick off a freebase session with a ui server:
+//node service "run-freebase=true" "embedded_filename=./embeddedtest.db" "freebase-ip=127.0.0.1" "freebase-port=8000"
 
 try{
 	var settings = {};
+
 	process.argv.forEach(function (val, index, array) {
 	  if (index > 1){
 	  	var argSplit = val.split('=');
@@ -10,6 +15,7 @@ try{
 	  }
 	});
 
+	settings['freebase-ip'] = settings['freebase-ip']?settings['freebase-ip']:'127.0.0.1';
 	settings['freebase-port'] = settings['freebase-port']?parseInt(settings['freebase-port']):8000;
 	settings['freebase-ui-port'] = settings['freebase-ui-port']?parseInt(settings['freebase-ui-port']):9999;
 	settings['run-freebase'] = settings['run-freebase']?settings['run-freebase']:false;
@@ -19,6 +25,7 @@ try{
 	settings['freebase-authtoken-secret'] = settings['freebase-authtoken-secret']?settings['freebase-authtoken-secret']:'a256a2fd43bf441483c5177fc85fd9d3';
 	settings['freebase-system-secret'] = settings['freebase-system-secret']?settings['freebase-system-secret']:'freebase-ui';
 	settings['freebase-log-level'] = settings['freebase-log-level']?settings['freebase-log-level']:'info|error|warning|trace';
+
 
 }catch(e){
 	console.log('Bad settings: ' + e);
@@ -33,6 +40,24 @@ var startPortal = function(){
 		app.use(express.bodyParser());
 		app.use(express.cookieParser());
 		app.use(express.static(__dirname+'/app'));
+
+		//we proxy to the freebase instance - wherever it may be...
+		app.get('/browser_client', function(req, res){
+		  
+			var options = {
+			  hostname: settings['freebase-ip'],
+			  port: settings['freebase-port'],
+			  path: '/browser_client',
+			  method: 'GET'
+			};
+
+			var connector = http.request(options, function(freebase_res) {
+			  freebase_res.pipe(res, {end:true});//tell 'response' end=true
+			});
+
+			req.pipe(connector, {end:true});
+
+		});
 
 		app.get('/', function(req, res){
 		  res.sendfile(__dirname+'/app/index.htm');
@@ -53,43 +78,62 @@ var startPortal = function(){
 if (settings['run-freebase']){
 
 	var freebase_config = {
-		port:settings['freebase-port'], 
+		port:settings['freebase-port'],
 		services:{
 			auth:{
+				config:{
 					authTokenSecret:settings['freebase-authtoken-secret'],
 					systemSecret:settings['freebase-system-secret']
-				 },
-				 data:{},
-				 utils:{log_level:settings['freebase-log-level']}
+				}
+			},
+			data:{
+				config:{}
 			}
-		};
+		},
+		utils:{
+			log_level:'info|error|warning|trace'
+		}
+	};
 
 	if (settings['freebase-mode'] == 'cluster'){
 
-		freebase_config = {	
-			mode:'cluster',
-			size:settings['freebase-cluster-size'], 
-			port:settings['freebase-port'], 
+		freebase_config = {
+			mode:'cluster', 
+			size:2,
+			port:settings['freebase-port'],
 			services:{
-				auth:{authTokenSecret:settings['freebase-authtoken-secret'],
-				systemSecret:settings['freebase-system-secret']},
-				utils:{log_level:settings['freebase-log-level']}
-			}
-		}
+				auth:{
+					config:{
+						authTokenSecret:settings['freebase-authtoken-secret'],
+						systemSecret:settings['freebase-system-secret']
+					}
+				},
+				data:{
+					config:{}
+				}
+			},
+			utils:{log_level:settings['freebase-log-level']}
+		};
 
 	}else if (settings['freebase-mode'] == 'embedded'){
 
 		freebase_config = {
-				services:{
+			mode:'embedded', 
+			services:{
 				auth:{
-					authTokenSecret:settings['freebase-authtoken-secret'],
-					systemSecret:settings['freebase-system-secret']
+					config:{
+						authTokenSecret:settings['freebase-authtoken-secret'],
+						systemSecret:settings['freebase-system-secret']
+					}
 				},
 				data:{
-					mode:'embedded'
-				},
-				utils:{log_level:settings['freebase-log-level']}
-			}
+					path:'./services/data_embedded',
+					config:{
+						embedded_filename:settings['embedded_filename']
+					}
+				}
+			},
+			utils:{log_level:settings['freebase-log-level']}
 		}
 
 	}
