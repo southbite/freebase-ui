@@ -20,20 +20,9 @@ angular.module('freebase', [])
 
             });
 
-      },
-      attach:function(path, scope, localScopeVarName){
-
       }
    }
 }])
-
-/*
-.controller('freebaseController', ['$scope', 'freebaseClient', function($scope, freebaseClient) {
-
-}]);
-*/
-
-//console.log('registered freebase');
 
 })(window, window.angular);
 

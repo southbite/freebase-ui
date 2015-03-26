@@ -1,2 +1,4 @@
-{"path":"/test/73763786378/7637635763","data":{"test":"name","test1":"name1"},"modified":1427378031639,"_id":"HUo86wbhOMQxePEr"}
-{"path":"/test/15342627","data":{"test arr":["name","test"]},"modified":1427378450528,"_id":"dpKFQWnlx2fQEPt9"}
+{"path":"/test/73763786378/7637635763","data":{"test":"name"},"modified":1427379887627,"_id":"HUo86wbhOMQxePEr"}
+{"path":"/test/hhjdggdjhgdjhgdhjgjdhgjdhg","data":{"test":"blah","test1":{"array":[{"blah":"blah","blah2":{}}]}},"modified":1427396789737,"_id":"SapKCYYQyfMPTti3"}
+{"path":"/test/73763786378/7637635763","data":{"test":"name","test2":"name2"},"modified":1427397877551,"_id":"HUo86wbhOMQxePEr"}
+{"$$deleted":true,"_id":"HUo86wbhOMQxePEr"}

@@ -4,7 +4,7 @@
 
 //var ideControllers = angular.module('ideControllers', []);
 
-//console.log('registering app');
+////console.log('registering app');
 
 var freebase_ui_app = angular.module('freebase_ui_app', [  
   'ui.bootstrap',                                            
@@ -52,7 +52,7 @@ var registerDataService = function (serviceName) {
 
 registerDataService('dataService');
 
-freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataService', function($scope, $modal, dataService) {
+freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataService', '$window', function($scope, $modal, dataService, $window) {
 
     $scope.rootPaths = [];
     $scope.selectedPath = "";
@@ -85,8 +85,8 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
          
          var handler = {
                  saved:function(result){
-                    //console.log('result');
-                    //console.log(result);
+                    ////console.log('result');
+                    ////console.log(result);
                  },
                  dismissed:function(){
                     
@@ -132,27 +132,28 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
     $scope.authenticate = function(){
 
-        console.log('authenticating in app');
-        console.log($scope.dburl);
-        console.log($scope.dbport);
-        console.log($scope.dbsecret);
+        //console.log('authenticating in app');
+        //console.log($scope.dburl);
+        //console.log($scope.dbport);
+        //console.log($scope.dbsecret);
 
         dataService.init($scope.dburl, $scope.dbport, $scope.dbsecret, function(e){
 
-            console.log(e);
+            //console.log(e);
 
             if (!e){
 
 
                 dataService.instance.client.onAll(function(e, message){
 
-                    console.log('IN CATCHALL');
-                    console.log(message);
+                    //console.log('IN CATCHALL');
+                    //console.log(message);
 
                     var apply = false;
 
                     if (message.action == 'DELETE'){
 
+                      if ($window.confirm('Proceed with delete?')){
                         $scope.rootPaths.map(function(item, index, array){
 
                             if (item.path == message.path){
@@ -166,37 +167,41 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                             $scope.selectedData = null;
                             apply = true;
                         }
-
+                      }
+                      
                     }else if (message.action == 'PUT'){
 
-                          var found = false;
-                          $scope.rootPaths.map(function(item, index, array){
-                              if (item.path == message.path)
-                                found = true;
-                          });
+                      if ($window.confirm('Proceed with save?')){
 
-                          if (!found){
-                            $scope.rootPaths.push({_id:message.payload.data._id, path:message.path});
-                            
-                            apply = true;
-                          }
+                        var found = false;
+                        $scope.rootPaths.map(function(item, index, array){
+                            if (item.path == message.path)
+                              found = true;
+                        });
 
-                          //console.log($scope.selectedPath);
-                          //console.log(message.payload);
-
-                         if (message.path == $scope.selectedPath){
-                            $scope.selectedData = message.payload.data;
-                            apply = true;
-                            
+                        if (!found){
+                          $scope.rootPaths.push({_id:message.payload.data._id, path:message.path});
+                          
+                          apply = true;
                         }
+
+                        ////console.log($scope.selectedPath);
+                        ////console.log(message.payload);
+
+                        if (message.path == $scope.selectedPath){
+                          $scope.selectedData = message.payload.data;
+                          apply = true;
+                          
+                        }
+                      }
                     }
 
                     if (apply)
                         $scope.$apply();
 
                 }, function(e){
-                  console.log('ONALL e');
-                  console.log(e);
+                  //console.log('ONALL e');
+                  //console.log(e);
 
                     if (!e){
 
@@ -204,8 +209,8 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                             dataService.instance.client.getPaths($scope.pathFilter, function(e, results){
 
-                                 //console.log('root paths!!!');
-                                //console.log(results.payload);
+                                 ////console.log('root paths!!!');
+                                ////console.log(results.payload);
                                 $scope.rootPaths = results.payload;
 
                                 $scope.$apply();
@@ -217,21 +222,21 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                             if (action.text == 'save'){
 
-                               //console.log('saving');
-                               //console.log($scope.selectedPath);
-                               //console.log($scope.selectedData);
-                               //console.log('toJson');
-                               //console.log(angular.toJson($scope.selectedData));
+                               ////console.log('saving');
+                               ////console.log($scope.selectedPath);
+                               ////console.log($scope.selectedData);
+                               ////console.log('toJson');
+                               ////console.log(angular.toJson($scope.selectedData));
 
                                dataService.instance.client.set($scope.selectedPath, JSON.parse(angular.toJson($scope.selectedData)), {index:'freebase', type:$scope.selectedPath}, function(e, result){
                                 
                                    
 
                                     if (!e){
-                                        //console.log('data saved successfully');
+                                        ////console.log('data saved successfully');
                                         alert('data saved successfully');
                                     }else{
-                                         //console.log('data save failed: ' + e);
+                                         ////console.log('data save failed: ' + e);
                                          alert('data save failed');
                                     }
 
@@ -249,13 +254,13 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                         }
 
                         $scope.pathSelected = function(path){
-                            //console.log('path selected');
-                            //console.log(path.path);
+                            ////console.log('path selected');
+                            ////console.log(path.path);
 
                             dataService.instance.client.get(path.path, null, function(e, result){
 
-                                //console.log('data found');
-                                //console.log(result.payload);
+                                ////console.log('data found');
+                                ////console.log(result.payload);
 
                                 if (!e){
                                      $scope.selectedPath = path.path;
@@ -263,6 +268,7 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                      $scope.selectedJSON = JSON.stringify(result.payload[0].data);
                                      
                                       var actions = [
+                                        /*
                                         {
                                             text:'undo',
                                             cssClass:'glyphicon glyphicon-arrow-left'
@@ -271,14 +277,17 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                             text:'redo',
                                             cssClass:'glyphicon glyphicon-arrow-right'
                                         },
+                                        */
                                         {
                                             text:'save',
                                             cssClass:'glyphicon glyphicon-floppy-disk'
                                         },
+                                        /*
                                         {
                                             text:'template',
                                             cssClass:'glyphicon glyphicon-plus'
                                         },
+                                        */
                                         {
                                             text:'delete',
                                             cssClass:'glyphicon glyphicon-remove'
@@ -297,20 +306,20 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                        
 
                         $scope.authenticated = true;
-                        //console.log('client attached');
+                        ////console.log('client attached');
 
                         $scope.$apply();
 
                     }else{
                         //TODO - notify failure on attaching to onAll
-                        //console.log('failure doing catchall: ' + e);
+                        ////console.log('failure doing catchall: ' + e);
                     }
 
                 });
 
             }else{
                 //TODO - notify failure connecting
-                //console.log('failure doing connecting: ' + e);
+                ////console.log('failure doing connecting: ' + e);
             }
 
         });
