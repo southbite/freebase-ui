@@ -146,53 +146,48 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                 dataService.instance.client.onAll(function(e, message){
 
-                    //console.log('IN CATCHALL');
-                    //console.log(message);
+                    console.log('IN CATCHALL');
+                    console.log(message);
 
                     var apply = false;
 
                     if (message.action == 'DELETE'){
 
-                      if ($window.confirm('Proceed with delete?')){
-                        $scope.rootPaths.map(function(item, index, array){
+                      $scope.rootPaths.map(function(item, index, array){
 
-                            if (item.path == message.path){
-                                apply = true;
-                                return array.splice(index, 1);
-                            }
-                        });
+                          if (item.path == message.path){
+                              apply = true;
+                              return array.splice(index, 1);
+                          }
+                      });
 
-                        if (message.path == $scope.selectedPath){
-                            $scope.selectedPath = "";
-                            $scope.selectedData = null;
-                            apply = true;
-                        }
+                      if (message.path == $scope.selectedPath){
+                          $scope.selectedPath = "";
+                          $scope.selectedData = null;
+                          apply = true;
                       }
-                      
+
                     }else if (message.action == 'PUT'){
 
-                      if ($window.confirm('Proceed with save?')){
+                      var found = false;
+                      $scope.rootPaths.map(function(item, index, array){
+                          if (item.path == message.path)
+                            found = true;
+                      });
 
-                        var found = false;
-                        $scope.rootPaths.map(function(item, index, array){
-                            if (item.path == message.path)
-                              found = true;
-                        });
+                      if (!found){
+                        $scope.rootPaths.push({_id:message.payload.data._id, path:message.path});
+                        
+                        apply = true;
+                      }
 
-                        if (!found){
-                          $scope.rootPaths.push({_id:message.payload.data._id, path:message.path});
-                          
-                          apply = true;
-                        }
+                      ////console.log($scope.selectedPath);
+                      ////console.log(message.payload);
 
-                        ////console.log($scope.selectedPath);
-                        ////console.log(message.payload);
-
-                        if (message.path == $scope.selectedPath){
-                          $scope.selectedData = message.payload.data;
-                          apply = true;
-                          
-                        }
+                      if (message.path == $scope.selectedPath){
+                        $scope.selectedData = message.payload.data;
+                        apply = true;
+                        
                       }
                     }
 
@@ -222,16 +217,14 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                             if (action.text == 'save'){
 
-                               ////console.log('saving');
-                               ////console.log($scope.selectedPath);
-                               ////console.log($scope.selectedData);
+                               console.log('saving');
+                               console.log($scope.selectedPath);
+                               console.log($scope.selectedData);
                                ////console.log('toJson');
                                ////console.log(angular.toJson($scope.selectedData));
-
-                               dataService.instance.client.set($scope.selectedPath, JSON.parse(angular.toJson($scope.selectedData)), {index:'freebase', type:$scope.selectedPath}, function(e, result){
+                            if ($window.confirm('Proceed with save?')){
+                                dataService.instance.client.set($scope.selectedPath, JSON.parse(angular.toJson($scope.selectedData)), {index:'freebase', type:$scope.selectedPath}, function(e, result){
                                 
-                                   
-
                                     if (!e){
                                         ////console.log('data saved successfully');
                                         alert('data saved successfully');
@@ -241,7 +234,9 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                     }
 
                                 });
+                              }
                             }else if (action.text == 'delete'){
+                              if ($window.confirm('Proceed with delete?')){
                                 dataService.instance.client.remove($scope.selectedPath, {index:'freebase', type:$scope.selectedPath}, function(e, result){
                                 
                                     if (e){
@@ -250,8 +245,9 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
                                       alert('data deleted successfully');
 
                                 });
+                              }
                             }
-                        }
+                          }
 
                         $scope.pathSelected = function(path){
                             ////console.log('path selected');
