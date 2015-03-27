@@ -9,7 +9,7 @@ try{
 	var settings = {};
 
 	process.argv.forEach(function (val, index, array) {
-	  if (index > 1){
+	  if (val.indexOf('=') > -1){
 	  	var argSplit = val.split('=');
 	  	settings[argSplit[0]] = argSplit[1];
 	  }
