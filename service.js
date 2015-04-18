@@ -23,12 +23,12 @@ try{
 	settings['freebase-cluster-size'] = settings['freebase-cluster-size']?parseInt(settings['freebase-cluster-size']):2;
 
 	settings['freebase-authtoken-secret'] = settings['freebase-authtoken-secret']?settings['freebase-authtoken-secret']:'a256a2fd43bf441483c5177fc85fd9d3';
-	settings['freebase-system-secret'] = settings['freebase-system-secret']?settings['freebase-system-secret']:'freebase-ui';
+	settings['freebase-system-secret'] = settings['freebase-system-secret']?settings['freebase-system-secret']:'freebase';
 	settings['freebase-log-level'] = settings['freebase-log-level']?settings['freebase-log-level']:'info|error|warning|trace';
 
 
 }catch(e){
-	console.log('Bad settings: ' + e);
+	//console.log('Bad settings: ' + e);
 }
 
 var startPortal = function(){
@@ -59,6 +59,23 @@ var startPortal = function(){
 
 		});
 
+		app.get('/browser_primus.js', function(req, res){
+		  
+			var options = {
+			  hostname: settings['freebase-ip'],
+			  port: settings['freebase-port'],
+			  path: '/browser_primus.js',
+			  method: 'GET'
+			};
+
+			var connector = http.request(options, function(freebase_res) {
+			  freebase_res.pipe(res, {end:true});//tell 'response' end=true
+			});
+
+			req.pipe(connector, {end:true});
+
+		});
+
 		app.get('/', function(req, res){
 		  res.sendfile(__dirname+'/app/index.htm');
 		});
@@ -70,7 +87,7 @@ var startPortal = function(){
 		console.log('Or to "http://<external ip of this device>:' + settings['freebase-ui-port'] + '" from a different device');
 
 	}catch(e){
-		console.log('Failed starting freebase ui portal: ' + e);
+		//console.log('Failed starting freebase ui portal: ' + e);
 		process.exit();
 	}
 }
@@ -78,44 +95,60 @@ var startPortal = function(){
 if (settings['run-freebase']){
 
 	var freebase_config = {
-		port:settings['freebase-port'],
+		mode:'embedded', 
 		services:{
 			auth:{
+				path:'./services/auth/service.js',
 				config:{
 					authTokenSecret:settings['freebase-authtoken-secret'],
 					systemSecret:settings['freebase-system-secret']
 				}
 			},
 			data:{
+				path:'./services/data_embedded/service.js',
+				config:{}
+			},
+			pubsub:{
+				path:'./services/pubsub/service.js',
 				config:{}
 			}
 		},
 		utils:{
-			log_level:'info|error|warning|trace'
+			log_level:'info|error|warning',
+			log_component:'prepare'
 		}
 	};
+
+	/*
 
 	if (settings['freebase-mode'] == 'cluster'){
 
 		freebase_config = {
 			mode:'cluster', 
-			size:2,
-			port:settings['freebase-port'],
 			services:{
 				auth:{
+					path:'./services/auth/service.js',
 					config:{
 						authTokenSecret:settings['freebase-authtoken-secret'],
-						systemSecret:settings['freebase-system-secret']
+						systemSecret:['freebase-system-secret']
 					}
 				},
 				data:{
+					path:'./services/data_embedded/service.js',
+					config:{}
+				},
+				pubsub:{
+					path:'./services/pubsub/service.js',
 					config:{}
 				}
 			},
-			utils:{log_level:settings['freebase-log-level']}
+			utils:{
+				log_level:'info|error|warning',
+				log_component:'prepare'
+			}
 		};
 
-	}else if (settings['freebase-mode'] == 'embedded'){
+	}else{
 
 		freebase_config = {
 			mode:'embedded', 
@@ -137,6 +170,8 @@ if (settings['run-freebase']){
 		}
 
 	}
+
+	*/
 
 	service.initialize
 	(

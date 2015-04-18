@@ -96,6 +96,11 @@ freebase_ui_app.controller('new_object', ['$scope', '$modalInstance', 'dataServi
 
 					dataService.instance.client.set($scope.data.path, $scope.data.data, null, function(e, result){
 
+						console.log('did set');
+						console.log($scope.data);
+						console.log([e, result]);
+
+
 						if (!e){
 							$modalInstance.close(result.payload);
 						}else
