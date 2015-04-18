@@ -146,8 +146,8 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                 dataService.instance.client.onAll(function(e, message){
 
-                    //console.log('IN CATCHALL');
-                    //console.log(message);
+                    console.log('IN CATCHALL');
+                    console.log(message);
 
                     var apply = false;
 
@@ -155,13 +155,13 @@ freebase_ui_app.controller('freebaseController', ['$scope', '$modal', 'dataServi
 
                       $scope.rootPaths.map(function(item, index, array){
 
-                          if (item.path == message.path){
+                          if (item.path == message.payload.data){
                               apply = true;
                               return array.splice(index, 1);
                           }
                       });
 
-                      if (message.path == $scope.selectedPath){
+                      if (message.payload.data == $scope.selectedPath){
                           $scope.selectedPath = "";
                           $scope.selectedData = null;
                           apply = true;
