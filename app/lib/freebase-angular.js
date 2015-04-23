@@ -11,7 +11,7 @@ angular.module('freebase', [])
       connect:function(host, port, secret, done){
             var _this = this;
             
-            wind.FreebaseClient.load({host:host, port:port, secret:secret}, function(e, client){
+            wind.FreebaseClient.load({config:{host:host, port:port, secret:secret}}, function(e, client){
 
                if (!e)
                   _this.client = client;
